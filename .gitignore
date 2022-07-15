@@ -1,7 +1,5 @@
-r3600-raw-img.bin
+r6000-raw-img.bin
 orig-firmwares/*.bin
 ubifs-root/
-*+SSH.zip
-*+SSH+MI.zip
+translate/unknownPhrases.*
 *+SSH+MI+opt.zip
-*+SSH+opt.zip

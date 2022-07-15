@@ -1,0 +1,70 @@
+--- ./unpacked/6000/lib/preinit/90_mount_bind_etc	2022-07-11 09:52:17.313722800 +0300
++++ ./unpacked/6000/lib/preinit/90_mount_bind_etc	2022-07-14 14:46:16.007026600 +0300
+@@ -2,13 +2,15 @@
+ # Copyright (C) 2006-2010 OpenWrt.org
+ # Copyright (C) 2010 Vertical Communications
+ 
+-mount_dir="config datacenterconfig smartcontroller parentalctl smartvpn ppp crontabs"
++mount_dir="config datacenterconfig smartcontroller parentalctl smartvpn ppp crontabs dropbear"
+ mount_files="xqDb passwd shadow custom_hosts"
+ 
+ prepare_data_dir()
+ {
+ 	[ -d "/etc" ] && mkdir -p /data/etc
+ 	[ -d "/ini" ] && mkdir -p /data/ini
++	[ -d "/opt" ] && mkdir -p /data/opt
++	[ -d "/overlay" ] && mkdir -p /data/overlay
+ 	
+ 	for dir in $mount_dir
+ 	do
+@@ -46,6 +48,16 @@
+ 		cp -prf /ini/* /data/ini/
+ 	}
+ 	
++	[ -d "/opt" -a  -d "/data/opt" ] && {
++		rm -rf /data/opt/*
++		cp -prf /opt/* /data/opt/
++	}
++	
++	[ -d "/overlay" -a  -d "/data/overlay" ] && {
++		rm -rf /data/overlay/*
++		cp -prf /overlay/* /data/overlay/
++	}
++	
+ 	sync
+ }
+ 
+@@ -61,6 +73,16 @@
+ 		cp -prf /ini/* /data/ini/
+ 	}
+ 	
++	[ -d "/opt" -a -d "/data/opt" ] && {
++		rm -rf /data/opt/*
++		cp -prf /opt/* /data/opt/
++	}
++	
++	[ -d "/overlay" -a -d "/data/overlay" ] && {
++		rm -rf /data/overlay/*
++		cp -prf /overlay/* /data/overlay/
++	}
++	
+ 	sync
+ }
+ 
+@@ -85,6 +107,16 @@
+ 	[ -d "/ini" -a  -d "/data/ini" ] && {
+ 		mount --bind /data/ini /ini
+ 	}
++	
++	# Mount /data/opt
++	[ -d "/opt" -a  -d "/data/opt" ] && {
++		mount --bind /data/opt /opt
++	}
++	
++	# Mount /data/overlay
++	[ -d "/overlay" -a  -d "/data/overlay" ] && {
++		mount --bind /data/overlay /overlay
++	}
+ }
+ 
+ sync_data_dir()

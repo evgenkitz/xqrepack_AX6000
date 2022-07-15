@@ -10,7 +10,7 @@ set -e
 KERNEL=$1
 ROOTFS=$2
 ROOTFS_DATA=$3
-OUTPUT=r3600-raw-img.bin
+OUTPUT=r6000-raw-img.bin
 
 # check for ubinize
 ubinize -V >/dev/null || { echo "need ubinize, from mtd-utils maybe?"; exit 1; }
@@ -26,7 +26,7 @@ ROOTFS_SIG=`hexdump -n 4 -e '"%_p"' "$ROOTFS"`
 KERNEL_SIG=`hexdump -n 4 -e '1/1 "%02x"' "$KERNEL"`
 [ "$KERNEL_SIG" = "d00dfeed" ] || { echo "invalid kernel img"; exit 1; }
 
-UBICFG=`mktemp /tmp/r3600-ubicfg.XXXXX`
+UBICFG=`mktemp /tmp/r6000-ubicfg.XXXXX`
 trap "rm -f $UBICFG" EXIT
 
 cat <<CFGEND > $UBICFG
