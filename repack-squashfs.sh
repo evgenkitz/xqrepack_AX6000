@@ -9,7 +9,7 @@
 set -e
 
 IMG=$1
-ROOTPW=''  # "password"
+ROOTPW="$PASSWORD"  # "password"
 SCRIPT_ROOT_DIR="$PWD"
 
 [ -e "$IMG" ] || { echo "rootfs img not found $IMG"; exit 1; }
@@ -72,7 +72,12 @@ boot_hook_add preinit_main enable_dev_access
 NVRAM
 
 # modify root password
-sed -i "s@root:[^:]*@root:${ROOTPW}@" "$FSDIR/etc/shadow"
+if [ -n "ROOTPW" ]
+then
+	sed -i "s@root:[^:]*@root:${ROOTPW}@" "$FSDIR/etc/shadow"
+else
+	echo -e "\033[0;31mROOT Password hasn't been changed!!!\033[0m\nTo modify this password please define it in ROOTPW env variable"
+fi
 
 # stop phone-home in web UI
 #cat <<JS >> "$FSDIR/www/js/miwifi-monitor.js"
@@ -80,9 +85,9 @@ sed -i "s@root:[^:]*@root:${ROOTPW}@" "$FSDIR/etc/shadow"
 #JS
 
 # add xqflash tool into firmware for easy upgrades
-# cp xqflash "$FSDIR/sbin"
-# chmod 0755      "$FSDIR/sbin/xqflash"
-# chown root:root "$FSDIR/sbin/xqflash"
+cp xqflash "$FSDIR/sbin"
+chmod 0755      "$FSDIR/sbin/xqflash"
+chown root:root "$FSDIR/sbin/xqflash"
 
 # dont start crap services
 #for SVC in stat_points statisticsservice \
@@ -117,6 +122,50 @@ if grep -q model=RA72 $FSDIR/usr/share/xiaoqiang/xiaoqiang-defaults.txt; then
 fi
 
 python translate/translate.py $FSDIR
+
+die()
+{
+	echo "$1"
+	exit 1
+}
+
+#install packages
+PACKAGES_TO_INSTALL=$(find packages -name '*.ipk' 2>-)
+if [ -n "$PACKAGES_TO_INSTALL" ]; then
+	TMP_DIR=`mktemp -d /tmp/PACKAGES_TO_INSTALL.XXXXX`
+	for pkg in $PACKAGES_TO_INSTALL;
+	do
+		echo "Installing $pkg"
+		mkdir -p $TMP_DIR|| \
+			die "error while creating $TMP_DIR"
+		tar zxpvf $pkg ./control.tar.gz -O|tar zxpvC $TMP_DIR ./control ./prerm || \
+			die "error while unpacking control.tar from $pkg"
+		PKG_NAME=$(awk '/Package:/{print $2; exit(0)}' $TMP_DIR/control)|| \
+			die "error while parsing control from $pkg"
+		if [ -z "$PKG_NAME" ]; then die "error: pkg name is empty in $pkg"; fi
+		echo "Installing '$PKG_NAME' package..."
+		FILE_LIST=$(tar zxpvf $pkg ./data.tar.gz -O|tar zxpvC $FSDIR|| \
+			die "error while unpacking data.tar from $pkg")
+		:> $TMP_DIR/$PKG_NAME.list
+		for fso in $FILE_LIST;
+		do
+			fso=$(realpath -m "/$fso")
+			fsoPATH="$FSDIR/$fso"
+			if [ -f "$fsoPATH" -o -L "$fsoPATH" ]
+			then
+				echo $fso >> $TMP_DIR/$PKG_NAME.list
+			fi
+		done
+		mv -f $TMP_DIR/control $TMP_DIR/$PKG_NAME.control|| \
+			die "error while moving $TMP_DIR/control from $pkg"
+		mv -f $TMP_DIR/prerm $TMP_DIR/$PKG_NAME.prerm|| \
+			die "error while moving $TMP_DIR/prerm from $pkg"
+		mv -f $TMP_DIR/* $FSDIR/usr/lib/opkg/info|| \
+			die "error while moving opkg info for $pkg"
+	done
+	rm -rf "$TMP_DIR"
+fi
+
 
 >&2 echo "repacking squashfs..."
 rm -f "$IMG.new"
