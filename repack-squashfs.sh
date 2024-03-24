@@ -118,7 +118,7 @@ chown root:root "$FSDIR/sbin/xqflash"
 
 if grep -q model=RA72 $FSDIR/usr/share/xiaoqiang/xiaoqiang-defaults.txt; then
 	echo "patch: $FSDIR/lib/preinit/90_mount_bind_etc"
-	patch $FSDIR/lib/preinit/90_mount_bind_etc "$SCRIPT_ROOT_DIR/patches/90_mount_bind_etc.patch"
+	patch $FSDIR/lib/preinit/90_mount_bind_etc "$SCRIPT_ROOT_DIR/patches/90_mount_bind_etc.patch" || exit -1
 fi
 
 python translate/translate.py $FSDIR
@@ -130,7 +130,7 @@ die()
 }
 
 #install packages
-PACKAGES_TO_INSTALL=$(find packages -name '*.ipk' 2>-)
+PACKAGES_TO_INSTALL=$(find packages -name '*.ipk' 2>&-)
 if [ -n "$PACKAGES_TO_INSTALL" ]; then
 	TMP_DIR=`mktemp -d /tmp/PACKAGES_TO_INSTALL.XXXXX`
 	for pkg in $PACKAGES_TO_INSTALL;

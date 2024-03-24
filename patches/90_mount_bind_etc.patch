@@ -4,8 +4,8 @@
  # Copyright (C) 2006-2010 OpenWrt.org
  # Copyright (C) 2010 Vertical Communications
 
--mount_dir="config datacenterconfig smartcontroller parentalctl smartvpn ppp crontabs"
-+mount_dir="config datacenterconfig smartcontroller parentalctl smartvpn ppp crontabs dropbear"
+-mount_dir="config datacenterconfig smartcontroller parentalctl smartvpn ppp crontabs mipctl"
++mount_dir="config datacenterconfig smartcontroller parentalctl smartvpn ppp crontabs mipctl dropbear"
  mount_files="xqDb passwd shadow custom_hosts"
 
  prepare_data_dir()

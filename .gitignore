@@ -2,5 +2,4 @@ r6000-raw-img.bin
 orig-firmwares/*.bin
 ubifs-root/
 translate/unknownPhrases.*
-packages/*
 *+SSH+MI+opt.zip
