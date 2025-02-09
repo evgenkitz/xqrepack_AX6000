@@ -130,7 +130,7 @@ die()
 }
 
 #install packages
-PACKAGES_TO_INSTALL=$(find packages -name '*.ipk' 2>-)
+PACKAGES_TO_INSTALL=$(find packages -name '*.ipk' 2>$-)
 if [ -n "$PACKAGES_TO_INSTALL" ]; then
 	TMP_DIR=`mktemp -d /tmp/PACKAGES_TO_INSTALL.XXXXX`
 	for pkg in $PACKAGES_TO_INSTALL;
